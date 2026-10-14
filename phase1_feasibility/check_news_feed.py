@@ -80,14 +80,14 @@ def describe(keyword: str, query: str) -> tuple[str, list[str]]:
         md += f"| {i} | {e.get('title', '').replace('|', '/')} | {s} | {e.get('published', '')} |\n"
     if entries:
         md += f"\nSummary of item 1, HTML stripped: \"{strip_html(entries[0].get('summary', ''))[:200]}\"\n"
-    obs = [f"`{query}`: {n} items, published {rng}; keyword in title {pct(kw)}; "
+    obs = [f"`{query}`: {n} items, published {rng}; keyword in title {pct(kw)}; "  # noqa: ISC004
            f"source suffix {pct(suffix)}; summary with extra text {pct(extra)}."]
     return md, obs
 
 
 def main() -> None:
     """Run all feed checks and write the report section."""
-    out = [f"## 2. News feed check (Google News RSS)\n\nRun: {datetime.now():%Y-%m-%d %H:%M:%S} | "
+    out = [f"## 2. News feed check (Google News RSS)\n\nRun: {datetime.now():%Y-%m-%d %H:%M:%S} | "  # noqa: ISC004
            f"Python {platform.python_version()} | requests {requests.__version__} | "
            f"feedparser {feedparser.__version__}\n\nURL template: `{URL}`\n"]
     obs: list[str] = []
