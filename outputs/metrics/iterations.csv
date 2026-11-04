@@ -1,0 +1,2 @@
+iteration,model,description,cv_accuracy_mean,cv_accuracy_std,cv_macro_f1_mean,cv_macro_f1_std,params,logged_at
+baseline,Majority class,DummyClassifier(strategy='most_frequent'); lower bound for all later models,0.5936,0.0005,0.2483,0.0001,"{""constant"": null, ""random_state"": null, ""strategy"": ""most_frequent""}",2026-11-04T20:28:50

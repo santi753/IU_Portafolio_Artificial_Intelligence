@@ -33,3 +33,14 @@ LABELS = ("negative", "neutral", "positive")
 # negative-neutral-positive. Red/blue (not red/green) stays distinguishable for
 # colour-blind readers, and the grey middle marks "neutral" as the absence of tone.
 CLASS_COLORS = {"negative": "#e34948", "neutral": "#8c8c88", "positive": "#2a78d6"}
+
+# Train/test split and evaluation
+# The split is stored once as row positions, so every notebook and script
+# evaluates on exactly the same rows.
+SPLIT_FILE = PROJECT_ROOT / "data" / "split.json"
+# One row per modelling iteration (cross-validation scores and parameters)
+ITERATIONS_FILE = METRICS_DIR / "iterations.csv"
+# Share of the data held back as the final, untouched test set
+TEST_SIZE = 0.2
+# Number of stratified cross-validation folds on the training part
+CV_FOLDS = 5
