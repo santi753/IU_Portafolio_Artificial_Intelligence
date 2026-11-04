@@ -1,0 +1,12 @@
+# Installs the exact tested versions of all runtime and development tools,
+# plus the newsentiment package itself in editable mode (-e .).
+pandas==3.0.6
+scikit-learn==1.9.1
+requests==2.34.2
+feedparser==6.0.14
+joblib==1.6.0
+matplotlib==3.11.2
+notebook==7.6.4
+ipykernel==7.4.0
+pytest==9.2.0
+-e .
