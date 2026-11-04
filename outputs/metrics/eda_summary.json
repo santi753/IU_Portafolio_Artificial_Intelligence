@@ -1,0 +1,232 @@
+{
+  "cleaning": {
+    "rows_in": 4846,
+    "empty_removed": 0,
+    "conflicting_texts": 2,
+    "conflicting_rows_removed": 4,
+    "duplicate_rows_removed": 6,
+    "rows_out": 4836,
+    "class_counts": {
+      "negative": 604,
+      "neutral": 2871,
+      "positive": 1361
+    }
+  },
+  "class_distribution": {
+    "counts": {
+      "negative": 604,
+      "neutral": 2871,
+      "positive": 1361
+    },
+    "shares_pct": {
+      "negative": 12.49,
+      "neutral": 59.37,
+      "positive": 28.14
+    },
+    "majority_class": "neutral",
+    "majority_share_pct": 59.37
+  },
+  "sentence_length_words": {
+    "negative": {
+      "count": 604,
+      "mean": 23.92,
+      "median": 22.0,
+      "min": 5,
+      "max": 56
+    },
+    "neutral": {
+      "count": 2871,
+      "mean": 22.15,
+      "median": 21.0,
+      "min": 2,
+      "max": 81
+    },
+    "positive": {
+      "count": 1361,
+      "mean": 24.68,
+      "median": 23.0,
+      "min": 5,
+      "max": 57
+    },
+    "overall": {
+      "count": 4836,
+      "mean": 23.09,
+      "median": 21.0,
+      "min": 2,
+      "max": 81
+    }
+  },
+  "vocabulary": {
+    "total_tokens": 96410,
+    "distinct_tokens": 10067,
+    "tokens_occurring_once": 5121,
+    "share_occurring_once_pct": 50.87
+  },
+  "distinctive_words": {
+    "min_count": 20,
+    "n_tokens_considered": 723,
+    "class_token_share_pct": {
+      "negative": 12.82,
+      "neutral": 57.29,
+      "positive": 29.9
+    },
+    "top10": {
+      "negative": [
+        {
+          "token": "decreased",
+          "count": 79,
+          "lift": 6.72
+        },
+        {
+          "token": "down",
+          "count": 98,
+          "lift": 6.61
+        },
+        {
+          "token": "fell",
+          "count": 55,
+          "lift": 6.53
+        },
+        {
+          "token": "lay",
+          "count": 31,
+          "lift": 5.79
+        },
+        {
+          "token": "lower",
+          "count": 40,
+          "lift": 5.66
+        },
+        {
+          "token": "off",
+          "count": 46,
+          "lift": 5.09
+        },
+        {
+          "token": "cut",
+          "count": 26,
+          "lift": 4.8
+        },
+        {
+          "token": "items",
+          "count": 31,
+          "lift": 4.78
+        },
+        {
+          "token": "offs",
+          "count": 20,
+          "lift": 4.68
+        },
+        {
+          "token": "temporary",
+          "count": 20,
+          "lift": 4.68
+        }
+      ],
+      "neutral": [
+        {
+          "token": "www",
+          "count": 29,
+          "lift": 1.75
+        },
+        {
+          "token": "square",
+          "count": 25,
+          "lift": 1.75
+        },
+        {
+          "token": "details",
+          "count": 24,
+          "lift": 1.75
+        },
+        {
+          "token": "disclosed",
+          "count": 24,
+          "lift": 1.75
+        },
+        {
+          "token": "espoo",
+          "count": 20,
+          "lift": 1.75
+        },
+        {
+          "token": "headquartered",
+          "count": 32,
+          "lift": 1.69
+        },
+        {
+          "token": "no",
+          "count": 53,
+          "lift": 1.68
+        },
+        {
+          "token": "any",
+          "count": 26,
+          "lift": 1.68
+        },
+        {
+          "token": "analysis",
+          "count": 25,
+          "lift": 1.68
+        },
+        {
+          "token": "tikkurila",
+          "count": 24,
+          "lift": 1.67
+        }
+      ],
+      "positive": [
+        {
+          "token": "improved",
+          "count": 21,
+          "lift": 3.35
+        },
+        {
+          "token": "grew",
+          "count": 34,
+          "lift": 3.25
+        },
+        {
+          "token": "won",
+          "count": 34,
+          "lift": 3.15
+        },
+        {
+          "token": "rose",
+          "count": 102,
+          "lift": 3.08
+        },
+        {
+          "token": "awarded",
+          "count": 35,
+          "lift": 3.06
+        },
+        {
+          "token": "positive",
+          "count": 28,
+          "lift": 2.99
+        },
+        {
+          "token": "respectively",
+          "count": 24,
+          "lift": 2.93
+        },
+        {
+          "token": "increased",
+          "count": 109,
+          "lift": 2.73
+        },
+        {
+          "token": "liters",
+          "count": 20,
+          "lift": 2.68
+        },
+        {
+          "token": "improve",
+          "count": 22,
+          "lift": 2.58
+        }
+      ]
+    }
+  }
+}

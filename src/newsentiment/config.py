@@ -28,3 +28,8 @@ RANDOM_SEED = 42
 
 # Sentiment classes, in fixed order
 LABELS = ("negative", "neutral", "positive")
+
+# Class colours used by every figure: a diverging red-grey-blue scheme for
+# negative-neutral-positive. Red/blue (not red/green) stays distinguishable for
+# colour-blind readers, and the grey middle marks "neutral" as the absence of tone.
+CLASS_COLORS = {"negative": "#e34948", "neutral": "#8c8c88", "positive": "#2a78d6"}

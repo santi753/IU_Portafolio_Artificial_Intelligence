@@ -52,3 +52,9 @@ def test_training_file_exists():
             "download the Kaggle Financial PhraseBank into data/raw/."
         )
     assert config.TRAINING_FILE.stat().st_size > 0
+
+
+def test_every_label_has_a_colour():
+    """CLASS_COLORS defines a colour for every label in LABELS."""
+    for label in config.LABELS:
+        assert label in config.CLASS_COLORS, f"No colour for label {label!r}"
