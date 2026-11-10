@@ -23,7 +23,13 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_recall_fscore_support
-from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate, train_test_split
+from sklearn.model_selection import (
+    GridSearchCV,
+    StratifiedKFold,
+    cross_val_predict,
+    cross_validate,
+    train_test_split,
+)
 
 from newsentiment import config
 
@@ -224,6 +230,53 @@ def cross_val_predictions(estimator, X, y) -> np.ndarray:
         An array with one predicted label per row of ``X``, in input order.
     """
     return cross_val_predict(estimator, X, y, cv=_cv_splitter())
+
+
+def tune_model(estimator, param_grid: dict, X, y, *, n_jobs: int = -1) -> tuple[dict, pd.DataFrame]:
+    """Grid search over ``param_grid`` with cross-validation on the training data.
+
+    Every candidate is scored on the same stratified folds as every other
+    iteration (:func:`_cv_splitter`), with macro-F1 as the selection metric and
+    accuracy as a secondary metric.
+
+    Note: picking the best of many cross-validation scores makes that best
+    score slightly optimistic (some of its lead over the other candidates is
+    luck on these particular folds). The unbiased estimate of the chosen
+    model comes later, from the locked test set.
+
+    Args:
+        estimator: An unfitted scikit-learn estimator or pipeline.
+        param_grid: Parameter grid in scikit-learn's ``step__param`` notation,
+            e.g. ``{"clf__C": [0.1, 1, 10]}``.
+        X: Training inputs (e.g. a Series of texts).
+        y: Training labels.
+        n_jobs: Parallel jobs for the search; ``-1`` uses all CPU cores.
+
+    Returns:
+        ``(best_params, results)``: the parameters of the candidate with the
+        highest mean macro-F1, and a DataFrame with one row per candidate
+        (one column per parameter, ``mean_macro_f1``, ``std_macro_f1``,
+        ``mean_accuracy``, ``std_accuracy``, ``rank``), sorted by rank.
+    """
+    search = GridSearchCV(
+        estimator,
+        param_grid,
+        cv=_cv_splitter(),
+        scoring={"macro_f1": "f1_macro", "accuracy": "accuracy"},
+        refit="macro_f1",
+        n_jobs=n_jobs,
+    )
+    search.fit(X, y)
+
+    cv = search.cv_results_
+    results = pd.DataFrame(list(cv["params"]))
+    for name in ("macro_f1", "accuracy"):
+        results[f"mean_{name}"] = cv[f"mean_test_{name}"]
+        results[f"std_{name}"] = cv[f"std_test_{name}"]
+    results["rank"] = cv["rank_test_macro_f1"]
+    # Stable sort keeps the grid order among tied candidates
+    results = results.sort_values("rank", kind="stable").reset_index(drop=True)
+    return dict(search.best_params_), results
 
 
 def log_iteration(

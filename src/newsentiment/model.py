@@ -83,7 +83,7 @@ def key_params(pipeline: Pipeline) -> dict:
     Returns:
         A JSON-serialisable dict with the vectorizer settings (``ngram_range``,
         ``min_df``, ``max_df``, ``sublinear_tf``), the classifier type and its
-        main hyperparameters (``alpha`` for Naive Bayes; ``C`` and
+        main hyperparameters (``alpha`` and ``fit_prior`` for Naive Bayes; ``C`` and
         ``class_weight`` for logistic regression).
     """
     tfidf = pipeline.named_steps["tfidf"]
@@ -98,6 +98,7 @@ def key_params(pipeline: Pipeline) -> dict:
     }
     if isinstance(clf, MultinomialNB):
         params["clf__alpha"] = clf.alpha
+        params["clf__fit_prior"] = clf.fit_prior
     elif isinstance(clf, LogisticRegression):
         params["clf__C"] = clf.C
         params["clf__class_weight"] = clf.class_weight

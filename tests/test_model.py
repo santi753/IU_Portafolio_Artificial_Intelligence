@@ -83,7 +83,8 @@ def test_key_params_is_json_serialisable(pipeline):
     assert json.loads(json.dumps(params)) == params
     assert "tfidf__ngram_range" in params
     if params["classifier"] == "MultinomialNB":
-        assert "clf__alpha" in params
+        assert {"clf__alpha", "clf__fit_prior"} <= params.keys()
+        assert params["clf__fit_prior"] is True
     else:
         assert {"clf__C", "clf__class_weight"} <= params.keys()
 

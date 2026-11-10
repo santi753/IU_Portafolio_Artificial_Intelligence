@@ -14,7 +14,9 @@ from newsentiment.evaluation import (
     evaluate,
     load_split,
     log_iteration,
+    tune_model,
 )
+from newsentiment.model import build_pipeline
 
 
 @pytest.fixture
@@ -171,3 +173,27 @@ def test_log_iteration_upserts(tmp_path):
         "iteration", "model", "description", "cv_accuracy_mean", "cv_accuracy_std",
         "cv_macro_f1_mean", "cv_macro_f1_std", "params", "logged_at",
     ]
+
+
+def test_tune_model_returns_grid_results():
+    """tune_model picks best parameters from the grid and returns one row per candidate."""
+    words = {
+        "negative": ["loss fell down", "profit decreased sharply", "sales dropped"],
+        "neutral": ["company is based in", "the board met", "report was published"],
+        "positive": ["profit rose up", "sales increased strongly", "earnings grew"],
+    }
+    rows = [(label, f"{words[label][i % 3]} in quarter {i}") for label in config.LABELS for i in range(20)]
+    df = pd.DataFrame(rows, columns=["label", "text"]).sample(frac=1, random_state=0)
+
+    grid = {"tfidf__ngram_range": [(1, 1), (1, 2)], "clf__alpha": [0.1, 1.0]}
+    # Single process: keeps the unit test independent of worker start-up on Windows
+    best_params, results = tune_model(build_pipeline("nb"), grid, df["text"], df["label"], n_jobs=1)
+
+    assert set(best_params) == set(grid)
+    for name, value in best_params.items():
+        assert value in grid[name]
+    assert len(results) == 4
+    assert {"tfidf__ngram_range", "clf__alpha", "mean_macro_f1", "std_macro_f1",
+            "mean_accuracy", "std_accuracy", "rank"} <= set(results.columns)
+    assert results["rank"].is_monotonic_increasing
+    assert results.iloc[0]["mean_macro_f1"] == results["mean_macro_f1"].max()
