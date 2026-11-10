@@ -15,6 +15,7 @@ This module only loads and cleans the data. Splitting, exploration and
 modelling happen elsewhere.
 """
 
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -139,3 +140,82 @@ def load_training_data(path: Path = config.TRAINING_FILE) -> tuple[pd.DataFrame,
         ``(cleaned_df, report)`` as returned by :func:`clean_training_data`.
     """
     return clean_training_data(load_raw_training_data(path))
+
+
+def _match_key(text: str) -> str:
+    """Normalise a sentence for matching across files.
+
+    Every non-ASCII character is replaced by ``"_"`` and surrounding whitespace
+    (including ``"\r"`` from Windows line endings) is stripped. The garbled
+    characters in company names are encoded differently in the files, so they
+    are made neutral instead of compared.
+    """
+    return re.sub(r"[^\x00-\x7f]", "_", text).strip()
+
+
+def _read_agreement_file(path: Path) -> set[tuple[str, str]]:
+    """Read one ``Sentences_*Agree.txt`` file as a set of (normalised text, label) pairs.
+
+    Each line is ``sentence@label``; it is split on the *last* ``"@"``, so an
+    ``"@"`` inside a sentence would stay part of the text.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Agreement file not found at {path}. It is part of the original Financial "
+            f"PhraseBank (FinancialPhraseBank-v1.0); place it in {config.DATA_RAW_DIR}."
+        )
+    pairs = set()
+    for line in path.read_text(encoding="latin-1").splitlines():
+        if not line.strip():
+            continue
+        text, sep, label = line.rpartition("@")
+        if not sep:
+            raise ValueError(f"Line without '@' separator in {path}: {line[:80]!r}")
+        pairs.add((_match_key(text), label.strip()))
+    return pairs
+
+
+def load_agreement_levels(
+    df: pd.DataFrame, files: dict[int, Path] = config.AGREEMENT_FILES
+) -> pd.Series:
+    """Return the annotator-agreement level of every row of ``df``.
+
+    The Financial PhraseBank was labelled by 5 to 8 annotators per sentence.
+    Its four ``Sentences_*Agree.txt`` files are cumulative (the 50 % file
+    contains all sentences with at least 50 % agreement), so each sentence
+    gets the *highest* level whose file contains it. The returned levels mean:
+
+    * ``100``: all annotators agreed (100 %);
+    * ``75``: 75-99 % agreement;
+    * ``66``: 66-74 % agreement;
+    * ``50``: 50-65 % agreement (the most ambiguous labels).
+
+    Rows are matched on the label plus the text, normalised by replacing every
+    non-ASCII character with ``"_"`` and stripping whitespace.
+
+    Args:
+        df: Data with columns ``label`` and ``text`` (e.g. the cleaned data).
+        files: Agreement level -> file path. Defaults to
+            ``config.AGREEMENT_FILES``.
+
+    Returns:
+        An ``int`` Series named ``agreement`` with the same index as ``df``.
+
+    Raises:
+        FileNotFoundError: If an agreement file is missing.
+        ValueError: If any row of ``df`` is found in none of the files.
+    """
+    # Highest level first, so the first file that contains a row decides
+    levels = sorted(files, reverse=True)
+    pairs = {level: _read_agreement_file(files[level]) for level in levels}
+
+    keys = [(_match_key(str(text)), str(label)) for text, label in zip(df["text"], df["label"])]
+    found = [next((level for level in levels if key in pairs[level]), None) for key in keys]
+
+    unmatched = sum(level is None for level in found)
+    if unmatched:
+        raise ValueError(
+            f"{unmatched} of {len(df)} rows were not found in any agreement file."
+        )
+    return pd.Series(found, index=df.index, name="agreement", dtype=int)

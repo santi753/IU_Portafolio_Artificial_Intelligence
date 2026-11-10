@@ -8,7 +8,7 @@ import pytest
 
 from newsentiment import config
 from newsentiment.evaluation import cross_val_predictions
-from newsentiment.model import build_pipeline, key_params
+from newsentiment.model import agreement_weights, build_pipeline, key_params
 
 # Each class gets its own signal words, so even a tiny model can learn them
 WORDS = {
@@ -95,3 +95,10 @@ def test_cross_val_predictions_one_per_input(tiny_data):
     predictions = cross_val_predictions(build_pipeline("logreg"), X, y)
     assert len(predictions) == len(X)
     assert set(predictions) <= set(config.LABELS)
+
+
+def test_agreement_weights():
+    """gamma = 0 gives all ones; otherwise (level / 100) ** gamma."""
+    levels = pd.Series([100, 75, 66, 50])
+    assert np.array_equal(agreement_weights(levels, 0), np.ones(4))
+    assert np.allclose(agreement_weights(levels, 2), [1.0, 0.5625, 0.4356, 0.25])

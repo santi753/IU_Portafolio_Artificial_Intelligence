@@ -189,20 +189,43 @@ def _cv_splitter() -> StratifiedKFold:
     return StratifiedKFold(n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_SEED)
 
 
-def cross_validate_model(estimator, X, y) -> dict:
+def _fit_params(sample_weight) -> dict | None:
+    """Fit parameters that pass per-sentence weights to the classifier step.
+
+    scikit-learn slices arrays of length ``n_samples`` per fold, so each fold's
+    model is trained with the weights of its own training rows. Scoring does
+    not receive the weights: every held-out sentence still counts equally.
+    """
+    if sample_weight is None:
+        return None
+    return {"clf__sample_weight": np.asarray(sample_weight, dtype=float)}
+
+
+def cross_validate_model(estimator, X, y, sample_weight=None) -> dict:
     """Run stratified k-fold cross-validation on the training data.
 
     Args:
         estimator: An unfitted scikit-learn estimator or pipeline.
         X: Training inputs (e.g. a Series of texts).
         y: Training labels.
+        sample_weight: Optional training weight per row of ``X``, passed to
+            the pipeline step ``clf`` (so ``estimator`` must be a pipeline built
+            by ``build_pipeline``). Only training is weighted; the scores are
+            unweighted.
 
     Returns:
         A dict with ``accuracy_mean``, ``accuracy_std``, ``macro_f1_mean``,
         ``macro_f1_std``, ``fold_accuracy`` and ``fold_macro_f1`` (lists with
         one score per fold).
     """
-    scores = cross_validate(estimator, X, y, cv=_cv_splitter(), scoring={"accuracy": "accuracy", "macro_f1": "f1_macro"})
+    scores = cross_validate(
+        estimator,
+        X,
+        y,
+        cv=_cv_splitter(),
+        scoring={"accuracy": "accuracy", "macro_f1": "f1_macro"},
+        params=_fit_params(sample_weight),
+    )
 
     result: dict[str, Any] = {}
     for name in ("accuracy", "macro_f1"):
@@ -213,7 +236,7 @@ def cross_validate_model(estimator, X, y) -> dict:
     return result
 
 
-def cross_val_predictions(estimator, X, y) -> np.ndarray:
+def cross_val_predictions(estimator, X, y, sample_weight=None) -> np.ndarray:
     """Return out-of-fold predictions for every training row.
 
     Uses the same stratified folds as :func:`cross_validate_model`. Every
@@ -225,14 +248,16 @@ def cross_val_predictions(estimator, X, y) -> np.ndarray:
         estimator: An unfitted scikit-learn estimator or pipeline.
         X: Training inputs (e.g. a Series of texts).
         y: Training labels.
+        sample_weight: Optional training weight per row, as in
+            :func:`cross_validate_model`.
 
     Returns:
         An array with one predicted label per row of ``X``, in input order.
     """
-    return cross_val_predict(estimator, X, y, cv=_cv_splitter())
+    return cross_val_predict(estimator, X, y, cv=_cv_splitter(), params=_fit_params(sample_weight))
 
 
-def cross_val_probabilities(estimator, X, y) -> np.ndarray:
+def cross_val_probabilities(estimator, X, y, sample_weight=None) -> np.ndarray:
     """Return out-of-fold class probabilities for every training row.
 
     Uses the same stratified folds as :func:`cross_val_predictions`, so each
@@ -250,11 +275,15 @@ def cross_val_probabilities(estimator, X, y) -> np.ndarray:
             ``predict_proba``.
         X: Training inputs (e.g. a Series of texts).
         y: Training labels.
+        sample_weight: Optional training weight per row, as in
+            :func:`cross_validate_model`.
 
     Returns:
         An array of shape ``(n_rows, n_classes)``, rows in input order.
     """
-    return cross_val_predict(estimator, X, y, cv=_cv_splitter(), method="predict_proba")
+    return cross_val_predict(
+        estimator, X, y, cv=_cv_splitter(), method="predict_proba", params=_fit_params(sample_weight)
+    )
 
 
 def tune_model(estimator, param_grid: dict, X, y, *, n_jobs: int = -1) -> tuple[dict, pd.DataFrame]:
@@ -304,6 +333,21 @@ def tune_model(estimator, param_grid: dict, X, y, *, n_jobs: int = -1) -> tuple[
     return dict(search.best_params_), results
 
 
+def _same_row(old: pd.Series, new: dict) -> bool:
+    """True if a logged row equals a new row in every column except ``logged_at``."""
+    for column in ITERATION_COLUMNS:
+        if column == "logged_at":
+            continue
+        a, b = old[column], new[column]
+        if isinstance(b, float):
+            # Values were rounded to 4 decimals before writing; allow float noise only
+            if pd.isna(a) or abs(float(a) - b) > 1e-12:
+                return False
+        elif str(a) != str(b):
+            return False
+    return True
+
+
 def log_iteration(
     iteration: str,
     model: str,
@@ -315,7 +359,9 @@ def log_iteration(
     """Add or replace one row in the iterations log.
 
     A row with the same ``iteration`` name is replaced, so re-running a
-    notebook does not create duplicate rows.
+    notebook does not create duplicate rows. If that row already holds exactly
+    the same values (apart from ``logged_at``), the file is left untouched, so
+    an unchanged re-run does not modify the log.
 
     Args:
         iteration: Short unique name of the iteration, e.g. ``"baseline"``.
@@ -345,6 +391,9 @@ def log_iteration(
     if path.is_file():
         log = pd.read_csv(path)
         positions = np.flatnonzero(log["iteration"].astype(str) == iteration)
+        if len(positions) == 1 and _same_row(log.iloc[int(positions[0])], row):
+            # Nothing changed: keep the old row (and its timestamp), do not rewrite
+            return log[ITERATION_COLUMNS]
         if len(positions) > 0:
             # Upsert: put the new row where the old one was (keeps the log
             # order) and drop every row with the same name.

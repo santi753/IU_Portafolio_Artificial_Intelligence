@@ -16,6 +16,7 @@ held-out sentences.
 
 from typing import Any
 
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
@@ -103,3 +104,22 @@ def key_params(pipeline: Pipeline) -> dict:
         params["clf__C"] = clf.C
         params["clf__class_weight"] = clf.class_weight
     return {name: _to_json(value) for name, value in params.items()}
+
+
+def agreement_weights(levels, gamma: float) -> np.ndarray:
+    """Turn annotator-agreement levels into training sample weights.
+
+    ``weight = (level / 100) ** gamma``. With ``gamma = 0`` every sentence
+    gets weight 1 (no weighting); larger values down-weight sentences whose
+    label the annotators disagreed on more strongly (e.g. with ``gamma = 2``
+    a 50 % sentence counts 0.25, a 100 % sentence 1.0).
+
+    Args:
+        levels: Agreement levels in percent (100 / 75 / 66 / 50), e.g. from
+            :func:`newsentiment.data.load_agreement_levels`.
+        gamma: Exponent, ``>= 0``.
+
+    Returns:
+        A float array with one weight per level.
+    """
+    return (np.asarray(levels, dtype=float) / 100.0) ** gamma

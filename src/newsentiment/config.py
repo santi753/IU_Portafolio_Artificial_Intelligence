@@ -46,3 +46,17 @@ ITERATIONS_FILE = METRICS_DIR / "iterations.csv"
 TEST_SIZE = 0.2
 # Number of stratified cross-validation folds on the training part
 CV_FOLDS = 5
+
+# Annotator-agreement files of the original Financial PhraseBank (latin-1, one
+# "sentence@label" per line). Key = agreement level in percent. The files are
+# cumulative: the 50 % file contains every sentence with at least 50 % agreement,
+# the 100 % file only those all annotators agreed on.
+AGREEMENT_FILES = {
+    50: DATA_RAW_DIR / "Sentences_50Agree.txt",
+    66: DATA_RAW_DIR / "Sentences_66Agree.txt",
+    75: DATA_RAW_DIR / "Sentences_75Agree.txt",
+    100: DATA_RAW_DIR / "Sentences_AllAgree.txt",
+}
+
+# Colour for single-series figures that are not about the sentiment classes
+ACCENT_COLOR = "#6250d6"

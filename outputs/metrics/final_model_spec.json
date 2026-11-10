@@ -1,0 +1,19 @@
+{
+  "final_iteration": "v3",
+  "pipeline_params": {
+    "classifier": "LogisticRegression",
+    "tfidf__ngram_range": [
+      1,
+      2
+    ],
+    "tfidf__min_df": 2,
+    "tfidf__max_df": 1.0,
+    "tfidf__sublinear_tf": true,
+    "clf__C": 3,
+    "clf__class_weight": "balanced"
+  },
+  "agreement_gamma": 1,
+  "cv_macro_f1_mean": 0.731,
+  "rule": "v3 (best gamma > 0) replaces v2 only if its mean CV macro-F1 is higher AND it is better on >= 3 of the 5 folds; otherwise v2 stays final.",
+  "decided": "2026-11-10"
+}

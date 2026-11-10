@@ -222,3 +222,55 @@ def test_cross_val_probabilities_matches_predictions():
     # Fitted classes are sorted alphabetically, which is the LABELS order
     assert list(model.fit(df["text"], df["label"]).classes_) == list(config.LABELS)
     assert (np.array(config.LABELS)[proba.argmax(axis=1)] == pred).all()
+
+
+def _word_data() -> pd.DataFrame:
+    """60 synthetic sentences with class-specific words, 20 per class, shuffled."""
+    words = {
+        "negative": ["loss fell down", "profit decreased sharply", "sales dropped"],
+        "neutral": ["company is based in", "the board met", "report was published"],
+        "positive": ["profit rose up", "sales increased strongly", "earnings grew"],
+    }
+    rows = [(label, f"{words[label][i % 3]} in quarter {i}") for label in config.LABELS for i in range(20)]
+    return pd.DataFrame(rows, columns=["label", "text"]).sample(frac=1, random_state=0).reset_index(drop=True)
+
+
+def test_sample_weight_reaches_the_classifier():
+    """Unit weights reproduce the unweighted run exactly; unequal weights change the model."""
+    df = _word_data()
+    X, y = df["text"], df["label"]
+    model = build_pipeline("logreg")
+
+    plain = cross_validate_model(model, X, y)
+    ones = cross_validate_model(model, X, y, sample_weight=np.ones(len(df)))
+    assert ones["fold_macro_f1"] == plain["fold_macro_f1"]
+
+    proba_plain = cross_val_probabilities(model, X, y)
+    assert np.allclose(cross_val_probabilities(model, X, y, sample_weight=np.ones(len(df))), proba_plain)
+    # Down-weighting every negative sentence lowers the out-of-fold negative probabilities
+    weights = np.where(y == "negative", 0.01, 1.0)
+    proba_weighted = cross_val_probabilities(model, X, y, sample_weight=weights)
+    assert proba_weighted[:, 0].mean() < proba_plain[:, 0].mean()
+    pred = cross_val_predictions(model, X, y, sample_weight=weights)
+    assert len(pred) == len(df)
+
+
+def test_log_iteration_unchanged_rerun_keeps_file(tmp_path):
+    """Logging identical values again keeps the old row, its timestamp and the file bytes."""
+    path = tmp_path / "iterations.csv"
+    log_iteration("v0", "NB", "first", _cv(0.66574, 0.41161), {"a": [1, 2]}, path=path)
+    log_iteration("v1", "LR", "second", _cv(0.7, 0.6), {}, path=path)
+    # Fake an old timestamp, so a rewrite would be visible
+    log = pd.read_csv(path)
+    log.loc[0, "logged_at"] = "2000-01-01T00:00:00"
+    log.to_csv(path, index=False)
+    before = path.read_bytes()
+
+    log_iteration("v0", "NB", "first", _cv(0.66574, 0.41161), {"a": [1, 2]}, path=path)
+    assert path.read_bytes() == before
+
+    # A changed value still replaces the row and gets a new timestamp
+    log_iteration("v0", "NB", "first", _cv(0.66574, 0.5), {"a": [1, 2]}, path=path)
+    row = pd.read_csv(path).iloc[0]
+    assert row["cv_macro_f1_mean"] == 0.5
+    assert row["logged_at"] != "2000-01-01T00:00:00"

@@ -4,7 +4,12 @@ import pandas as pd
 import pytest
 
 from newsentiment import config
-from newsentiment.data import clean_training_data, load_raw_training_data, load_training_data
+from newsentiment.data import (
+    clean_training_data,
+    load_agreement_levels,
+    load_raw_training_data,
+    load_training_data,
+)
 
 
 def make_df(rows: list[tuple[str, str]]) -> pd.DataFrame:
@@ -122,3 +127,54 @@ def test_real_training_file():
     assert report["rows_out"] == 4836
     assert report["class_counts"] == {"negative": 604, "neutral": 2871, "positive": 1361}
     assert len(cleaned) == 4836
+
+
+def _write_agreement_files(folder, contents: dict[int, list[str]]) -> dict:
+    """Write tiny cumulative agreement files (latin-1, Windows line endings)."""
+    files = {}
+    for level, lines in contents.items():
+        path = folder / f"Sentences_{level}Agree.txt"
+        path.write_bytes("\r\n".join(lines).encode("latin-1") + b"\r\n")
+        files[level] = path
+    return files
+
+
+def test_agreement_levels_values(tmp_path):
+    """Highest matching level wins (text and label), including non-ASCII normalisation and an '@' inside the text."""
+    all_lines = ["Profit rose .@positive"]
+    l75 = all_lines + ["Sales fell .@negative"]
+    l66 = l75 + ["The board met .@neutral"]
+    l50 = l66 + ["Caf\xe9 Oy opened .@neutral", "Email a@b .@positive"]
+    files = _write_agreement_files(tmp_path, {100: all_lines, 75: l75, 66: l66, 50: l50})
+
+    df = make_df([
+        ("neutral", "The board met ."),
+        ("positive", "Profit rose ."),
+        ("neutral", "Caf\u00ff Oy opened ."),  # other non-ASCII character, same position
+        ("negative", "Sales fell ."),
+        ("positive", "Email a@b ."),
+    ])
+    levels = load_agreement_levels(df, files=files)
+    assert levels.tolist() == [66, 100, 50, 75, 50]
+    assert levels.dtype.kind == "i"
+    assert levels.index.equals(df.index)
+
+
+def test_agreement_levels_unmatched_raises(tmp_path):
+    """A row missing from all files, or with a different label, raises ValueError with the count."""
+    files = _write_agreement_files(tmp_path, {100: ["Up .@positive"], 50: ["Up .@positive"]})
+    df = make_df([("positive", "Up ."), ("negative", "Up ."), ("neutral", "Unknown .")])
+    with pytest.raises(ValueError, match="2 of 3 rows"):
+        load_agreement_levels(df, files=files)
+
+
+def test_real_agreement_files():
+    """Integration test: every cleaned sentence is matched, with the known band counts."""
+    files = [config.TRAINING_FILE, *config.AGREEMENT_FILES.values()]
+    missing = [p for p in files if not p.is_file()]
+    if missing:
+        pytest.skip(f"Data files not available: {missing}")
+    cleaned, _ = load_training_data()
+    levels = load_agreement_levels(cleaned)
+    assert len(levels) == len(cleaned) == 4836
+    assert levels.value_counts().to_dict() == {100: 2259, 75: 1189, 66: 761, 50: 627}
