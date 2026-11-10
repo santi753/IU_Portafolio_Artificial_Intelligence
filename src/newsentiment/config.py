@@ -63,3 +63,12 @@ AGREEMENT_FILES = {
 
 # Colour for single-series figures that are not about the sentiment classes
 ACCENT_COLOR = "#6250d6"
+
+# News fetcher (Google News RSS search, English edition because the model is English)
+# Look-back window in days, passed to the feed as "when:<days>d"
+NEWS_DAYS = 7
+# Seconds to wait for the feed before giving up
+REQUEST_TIMEOUT = 15
+NEWS_URL = "https://news.google.com/rss/search"
+NEWS_PARAMS = {"hl": "en-US", "gl": "US", "ceid": "US:en"}
+USER_AGENT = "newsentiment/0.1 (academic project)"

@@ -10,3 +10,6 @@ dist/
 
 # Error analysis: files contain dataset sentences (not redistributed)
 outputs/analysis/
+
+# Fetched news headlines: third-party content (not redistributed)
+data/news/*.csv
