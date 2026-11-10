@@ -23,7 +23,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_recall_fscore_support
-from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, cross_validate, train_test_split
 
 from newsentiment import config
 
@@ -172,6 +172,17 @@ def evaluate(y_true, y_pred) -> dict:
     }
 
 
+def _cv_splitter() -> StratifiedKFold:
+    """Return the cross-validation splitter shared by all CV functions.
+
+    Shuffled, stratified folds with a fixed seed: every model is compared on
+    exactly the same folds, and the out-of-fold predictions of
+    :func:`cross_val_predictions` come from the same folds as the scores of
+    :func:`cross_validate_model`.
+    """
+    return StratifiedKFold(n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_SEED)
+
+
 def cross_validate_model(estimator, X, y) -> dict:
     """Run stratified k-fold cross-validation on the training data.
 
@@ -185,10 +196,7 @@ def cross_validate_model(estimator, X, y) -> dict:
         ``macro_f1_std``, ``fold_accuracy`` and ``fold_macro_f1`` (lists with
         one score per fold).
     """
-    # Shuffled, stratified folds with a fixed seed: every model is compared
-    # on exactly the same folds.
-    cv = StratifiedKFold(n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_SEED)
-    scores = cross_validate(estimator, X, y, cv=cv, scoring={"accuracy": "accuracy", "macro_f1": "f1_macro"})
+    scores = cross_validate(estimator, X, y, cv=_cv_splitter(), scoring={"accuracy": "accuracy", "macro_f1": "f1_macro"})
 
     result: dict[str, Any] = {}
     for name in ("accuracy", "macro_f1"):
@@ -197,6 +205,25 @@ def cross_validate_model(estimator, X, y) -> dict:
         result[f"{name}_std"] = float(np.std(fold_scores))
         result[f"fold_{name}"] = [float(s) for s in fold_scores]
     return result
+
+
+def cross_val_predictions(estimator, X, y) -> np.ndarray:
+    """Return out-of-fold predictions for every training row.
+
+    Uses the same stratified folds as :func:`cross_validate_model`. Every
+    prediction comes from a model that did not see that sentence during
+    training, so the predictions can be passed to :func:`evaluate` for honest
+    per-class metrics without touching the test set.
+
+    Args:
+        estimator: An unfitted scikit-learn estimator or pipeline.
+        X: Training inputs (e.g. a Series of texts).
+        y: Training labels.
+
+    Returns:
+        An array with one predicted label per row of ``X``, in input order.
+    """
+    return cross_val_predict(estimator, X, y, cv=_cv_splitter())
 
 
 def log_iteration(

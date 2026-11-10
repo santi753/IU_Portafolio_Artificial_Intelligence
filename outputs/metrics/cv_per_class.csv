@@ -1,0 +1,10 @@
+iteration,class,precision,recall,f1,support
+v0,negative,0.9286,0.0269,0.0523,483
+v0,neutral,0.6708,0.9826,0.7973,2296
+v0,positive,0.6232,0.281,0.3873,1089
+v1a,negative,0.8233,0.3665,0.5072,483
+v1a,neutral,0.743,0.9495,0.8337,2296
+v1a,positive,0.7469,0.4931,0.594,1089
+v1b,negative,0.641,0.6542,0.6475,483
+v1b,neutral,0.8248,0.8223,0.8236,2296
+v1b,positive,0.6593,0.6575,0.6584,1089
