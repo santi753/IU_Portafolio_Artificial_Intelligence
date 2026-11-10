@@ -232,6 +232,31 @@ def cross_val_predictions(estimator, X, y) -> np.ndarray:
     return cross_val_predict(estimator, X, y, cv=_cv_splitter())
 
 
+def cross_val_probabilities(estimator, X, y) -> np.ndarray:
+    """Return out-of-fold class probabilities for every training row.
+
+    Uses the same stratified folds as :func:`cross_val_predictions`, so each
+    row's probabilities come from the model that did not see that row, and
+    the arg-max of each row matches the out-of-fold prediction (up to exact
+    ties). The estimator must support ``predict_proba``.
+
+    Column order: the order of the fitted estimator's ``classes_``, which
+    scikit-learn sorts alphabetically. For this project that is
+    ``config.LABELS`` (negative, neutral, positive). Stratified folds put
+    every class in every training fold, so all folds share this order.
+
+    Args:
+        estimator: An unfitted scikit-learn estimator or pipeline with
+            ``predict_proba``.
+        X: Training inputs (e.g. a Series of texts).
+        y: Training labels.
+
+    Returns:
+        An array of shape ``(n_rows, n_classes)``, rows in input order.
+    """
+    return cross_val_predict(estimator, X, y, cv=_cv_splitter(), method="predict_proba")
+
+
 def tune_model(estimator, param_grid: dict, X, y, *, n_jobs: int = -1) -> tuple[dict, pd.DataFrame]:
     """Grid search over ``param_grid`` with cross-validation on the training data.
 

@@ -7,3 +7,6 @@ data/raw/*
 .pytest_cache/
 build/
 dist/
+
+# Error analysis: files contain dataset sentences (not redistributed)
+outputs/analysis/

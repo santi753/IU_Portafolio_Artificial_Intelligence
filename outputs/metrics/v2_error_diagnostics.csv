@@ -1,0 +1,8 @@
+feature,correct,wrong
+contains a digit (%),55.269,47.44
+contains a period comparison (%),18.167,12.856
+contains 'loss' (%),2.944,2.73
+contains a negation (%),3.981,2.503
+mean length (words),23.136,23.328
+mean confidence (max probability),0.717,0.584
+sentences (n),2989.0,879.0

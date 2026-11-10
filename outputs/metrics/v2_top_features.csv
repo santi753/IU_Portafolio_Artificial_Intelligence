@@ -1,0 +1,46 @@
+class,rank,ngram,coefficient
+negative,1,down,5.935
+negative,2,decreased,5.2862
+negative,3,fell,3.9229
+negative,4,lower,2.8116
+negative,5,staff,2.7738
+negative,6,result,2.6558
+negative,7,down from,2.5507
+negative,8,dropped,2.5448
+negative,9,negative,2.4756
+negative,10,decreased to,2.4571
+negative,11,lay,2.3663
+negative,12,off,2.335
+negative,13,to eur,2.1603
+negative,14,fall,2.1505
+negative,15,had,2.0618
+neutral,1,is,2.8491
+neutral,2,approximately,2.1078
+neutral,3,no,1.8012
+neutral,4,development,1.7963
+neutral,5,business,1.7858
+neutral,6,includes,1.7702
+neutral,7,stake,1.5583
+neutral,8,range,1.4334
+neutral,9,other,1.3215
+neutral,10,not,1.302
+neutral,11,acquired,1.297
+neutral,12,sales of,1.23
+neutral,13,net sales,1.1992
+neutral,14,include,1.1688
+neutral,15,value of,1.1624
+positive,1,increased,3.9866
+positive,2,rose,3.933
+positive,3,increase,3.7971
+positive,4,up from,3.3147
+positive,5,up,3.2025
+positive,6,grew,2.9517
+positive,7,positive,2.9193
+positive,8,signed,2.795
+positive,9,rose to,2.7638
+positive,10,leading,2.6535
+positive,11,growth,2.6507
+positive,12,to,2.617
+positive,13,awarded,2.3629
+positive,14,improved,2.2415
+positive,15,increased by,2.1879

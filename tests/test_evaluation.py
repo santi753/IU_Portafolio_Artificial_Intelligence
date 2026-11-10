@@ -2,6 +2,7 @@
 
 import json
 
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn.dummy import DummyClassifier
@@ -9,6 +10,8 @@ from sklearn.dummy import DummyClassifier
 from newsentiment import config
 from newsentiment.evaluation import (
     create_split,
+    cross_val_predictions,
+    cross_val_probabilities,
     cross_validate_model,
     data_fingerprint,
     evaluate,
@@ -197,3 +200,25 @@ def test_tune_model_returns_grid_results():
             "mean_accuracy", "std_accuracy", "rank"} <= set(results.columns)
     assert results["rank"].is_monotonic_increasing
     assert results.iloc[0]["mean_macro_f1"] == results["mean_macro_f1"].max()
+
+
+def test_cross_val_probabilities_matches_predictions():
+    """Out-of-fold probabilities: one row per input, rows sum to 1, columns in LABELS order,
+    and the arg-max equals the out-of-fold prediction from the same folds."""
+    words = {
+        "negative": ["loss fell down", "profit decreased sharply", "sales dropped"],
+        "neutral": ["company is based in", "the board met", "report was published"],
+        "positive": ["profit rose up", "sales increased strongly", "earnings grew"],
+    }
+    rows = [(label, f"{words[label][i % 3]} in quarter {i}") for label in config.LABELS for i in range(20)]
+    df = pd.DataFrame(rows, columns=["label", "text"]).sample(frac=1, random_state=0)
+    model = build_pipeline("logreg")
+
+    proba = cross_val_probabilities(model, df["text"], df["label"])
+    pred = cross_val_predictions(model, df["text"], df["label"])
+
+    assert proba.shape == (len(df), len(config.LABELS))
+    assert np.allclose(proba.sum(axis=1), 1.0)
+    # Fitted classes are sorted alphabetically, which is the LABELS order
+    assert list(model.fit(df["text"], df["label"]).classes_) == list(config.LABELS)
+    assert (np.array(config.LABELS)[proba.argmax(axis=1)] == pred).all()

@@ -19,6 +19,8 @@ MODELS_DIR = PROJECT_ROOT / "models"
 METRICS_DIR = PROJECT_ROOT / "outputs" / "metrics"
 FIGURES_DIR = PROJECT_ROOT / "outputs" / "figures"
 RESULTS_DIR = PROJECT_ROOT / "outputs" / "results"
+# Error-analysis files with dataset sentences; git-ignored (not redistributed)
+ANALYSIS_DIR = PROJECT_ROOT / "outputs" / "analysis"
 
 # Training data (Kaggle Financial PhraseBank, combined file)
 TRAINING_FILE = DATA_RAW_DIR / "all-data.csv"
