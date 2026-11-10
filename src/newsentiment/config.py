@@ -19,6 +19,9 @@ MODELS_DIR = PROJECT_ROOT / "models"
 METRICS_DIR = PROJECT_ROOT / "outputs" / "metrics"
 FIGURES_DIR = PROJECT_ROOT / "outputs" / "figures"
 RESULTS_DIR = PROJECT_ROOT / "outputs" / "results"
+# Final trained pipeline and its metadata (written by notebooks/02_training_evaluation.ipynb)
+MODEL_FILE = MODELS_DIR / "sentiment_model.joblib"
+MODEL_METADATA_FILE = MODELS_DIR / "model_metadata.json"
 # Error-analysis files with dataset sentences; git-ignored (not redistributed)
 ANALYSIS_DIR = PROJECT_ROOT / "outputs" / "analysis"
 

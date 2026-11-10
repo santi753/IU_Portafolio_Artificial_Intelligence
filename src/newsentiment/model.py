@@ -14,8 +14,11 @@ cross-validation fold, so the vocabulary and IDF weights never see the
 held-out sentences.
 """
 
+import json
+from pathlib import Path
 from typing import Any
 
+import joblib
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -123,3 +126,53 @@ def agreement_weights(levels, gamma: float) -> np.ndarray:
         A float array with one weight per level.
     """
     return (np.asarray(levels, dtype=float) / 100.0) ** gamma
+
+
+def save_model(
+    pipeline: Pipeline,
+    metadata: dict,
+    path: Path = config.MODEL_FILE,
+    metadata_path: Path = config.MODEL_METADATA_FILE,
+) -> tuple[Path, Path]:
+    """Save a fitted pipeline with joblib and its metadata as JSON.
+
+    Args:
+        pipeline: The fitted pipeline.
+        metadata: JSON-serialisable information about the model (parameters,
+            training data, library versions, ...).
+        path: Where to write the pipeline. Defaults to ``config.MODEL_FILE``.
+        metadata_path: Where to write the metadata. Defaults to
+            ``config.MODEL_METADATA_FILE``.
+
+    Returns:
+        ``(path, metadata_path)``.
+    """
+    path, metadata_path = Path(path), Path(metadata_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(pipeline, path)
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    return path, metadata_path
+
+
+def load_model(path: Path = config.MODEL_FILE) -> Pipeline:
+    """Load the pipeline saved by :func:`save_model`.
+
+    Only load model files you created yourself: joblib files are pickles and
+    can run code when loaded.
+
+    Args:
+        path: Location of the joblib file. Defaults to ``config.MODEL_FILE``.
+
+    Returns:
+        The fitted pipeline.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"No saved model at {path}; run notebooks/02_training_evaluation.ipynb first."
+        )
+    return joblib.load(path)

@@ -8,7 +8,7 @@ import pytest
 
 from newsentiment import config
 from newsentiment.evaluation import cross_val_predictions
-from newsentiment.model import agreement_weights, build_pipeline, key_params
+from newsentiment.model import agreement_weights, build_pipeline, key_params, load_model, save_model
 
 # Each class gets its own signal words, so even a tiny model can learn them
 WORDS = {
@@ -102,3 +102,22 @@ def test_agreement_weights():
     levels = pd.Series([100, 75, 66, 50])
     assert np.array_equal(agreement_weights(levels, 0), np.ones(4))
     assert np.allclose(agreement_weights(levels, 2), [1.0, 0.5625, 0.4356, 0.25])
+
+
+def test_save_load_round_trip(tiny_data, tmp_path):
+    """A saved and reloaded pipeline gives identical predictions; metadata is stored as JSON."""
+    X, y = tiny_data
+    pipeline = build_pipeline("logreg").fit(X, y)
+    model_file, metadata_file = save_model(
+        pipeline, {"iteration": "test"}, tmp_path / "model.joblib", tmp_path / "meta.json"
+    )
+
+    loaded = load_model(model_file)
+    assert np.array_equal(loaded.predict(X), pipeline.predict(X))
+    assert json.loads(metadata_file.read_text(encoding="utf-8")) == {"iteration": "test"}
+
+
+def test_load_model_missing_file(tmp_path):
+    """A missing model file gives a clear error that names the training notebook."""
+    with pytest.raises(FileNotFoundError, match="02_training_evaluation.ipynb"):
+        load_model(tmp_path / "missing.joblib")
