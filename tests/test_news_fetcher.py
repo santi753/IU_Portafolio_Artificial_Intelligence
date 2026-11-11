@@ -144,3 +144,14 @@ def test_save_news_writes_csv(monkeypatch, tmp_path):
     assert len(path.stem.split("_")[1]) == len("YYYYMMDD-HHMM")
     loaded = pd.read_csv(path, encoding="utf-8")
     assert loaded["title"].tolist() == df["title"].tolist()
+
+
+def test_load_news_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "NEWS_DIR", tmp_path)
+    df = parse_feed(FIXTURE, "Tesla")
+    df["fetched_at"] = pd.Timestamp("2026-11-10 12:00", tz="UTC")
+    loaded = news_fetcher.load_news(save_news(df, "Tesla"))
+    assert str(loaded["published"].dt.tz) == "UTC"
+    assert str(loaded["fetched_at"].dt.tz) == "UTC"
+    assert loaded["source"].tolist() == ["Reuters", ""]
+    assert loaded["title"].tolist() == df["title"].tolist()

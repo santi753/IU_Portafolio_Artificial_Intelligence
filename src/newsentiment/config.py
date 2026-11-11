@@ -72,3 +72,8 @@ REQUEST_TIMEOUT = 15
 NEWS_URL = "https://news.google.com/rss/search"
 NEWS_PARAMS = {"hl": "en-US", "gl": "US", "ceid": "US:en"}
 USER_AGENT = "newsentiment/0.1 (academic project)"
+
+# News preprocessing
+# Title fragments (case-insensitive) of stock quote pages: they carry no news and
+# would only add neutral noise to the sentiment counts
+QUOTE_PAGE_PATTERNS = ("stock price and chart", "stock price, news, quote", "stock quote")

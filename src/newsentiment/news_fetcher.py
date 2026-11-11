@@ -121,3 +121,21 @@ def save_news(df: pd.DataFrame, company: str) -> Path:
     path = news_dir / f"{slugify(company)}_{stamp}.csv"
     df.to_csv(path, index=False, encoding="utf-8")
     return path
+
+
+def load_news(path: str | Path) -> pd.DataFrame:
+    """Read a news cache CSV written by save_news.
+
+    Args:
+        path: Path of the CSV file.
+
+    Returns:
+        DataFrame with the saved columns. Text columns keep "" for missing values
+        (not NaN); ``published`` and ``fetched_at`` are UTC pandas datetimes.
+    """
+    df = pd.read_csv(path, encoding="utf-8", dtype=str, keep_default_na=False)
+    for column in ("published", "fetched_at"):
+        if column in df.columns:
+            # "" (missing date) becomes NaT
+            df[column] = pd.to_datetime(df[column].replace("", None), utc=True, format="ISO8601")
+    return df
