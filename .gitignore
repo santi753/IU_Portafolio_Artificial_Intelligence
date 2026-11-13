@@ -13,3 +13,7 @@ outputs/analysis/
 
 # Fetched news headlines: third-party content (not redistributed)
 data/news/*.csv
+
+# Classified headlines and summaries: contain third-party headlines (not redistributed)
+outputs/results/*.csv
+!outputs/results/.gitkeep

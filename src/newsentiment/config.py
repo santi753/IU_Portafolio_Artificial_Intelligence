@@ -77,3 +77,9 @@ USER_AGENT = "newsentiment/0.1 (academic project)"
 # Title fragments (case-insensitive) of stock quote pages: they carry no news and
 # would only add neutral noise to the sentiment counts
 QUOTE_PAGE_PATTERNS = ("stock price and chart", "stock price, news, quote", "stock quote")
+
+# Classifier
+# Predictions whose highest class probability is below this value are flagged as
+# low confidence: in the confidence-bin analysis in notebook 02 (out-of-fold, v2)
+# such predictions were only about 52 % correct.
+LOW_CONFIDENCE_THRESHOLD = 0.5
