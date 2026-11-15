@@ -6,9 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.dummy import DummyClassifier
+from sklearn.metrics import accuracy_score
 
 from newsentiment import config
 from newsentiment.evaluation import (
+    bootstrap_ci,
     create_split,
     cross_val_predictions,
     cross_val_probabilities,
@@ -137,6 +139,22 @@ def test_evaluate_zero_division():
     result = evaluate(["negative", "neutral", "positive"], ["neutral"] * 3)
     assert result["per_class"]["negative"]["precision"] == 0.0
     assert result["per_class"]["positive"]["f1"] == 0.0
+
+
+def test_bootstrap_ci_perfect_predictions():
+    """Every resample of perfect predictions scores 1, so the interval is (1, 1)."""
+    y = ["negative", "neutral", "positive", "neutral", "neutral"]
+    assert bootstrap_ci(y, y, accuracy_score) == (1.0, 1.0)
+
+
+def test_bootstrap_ci_same_seed_same_result():
+    """The interval is reproducible with the same seed and lies within [0, 1]."""
+    y_true = ["negative", "neutral", "positive"] * 10
+    y_pred = ["negative", "neutral", "neutral"] * 10
+    first = bootstrap_ci(y_true, y_pred, accuracy_score, n_boot=200, seed=7)
+    assert bootstrap_ci(y_true, y_pred, accuracy_score, n_boot=200, seed=7) == first
+    low, high = first
+    assert 0.0 <= low <= 2 / 3 <= high <= 1.0  # brackets the observed accuracy
 
 
 def test_cross_validate_model_keys(synthetic_df):

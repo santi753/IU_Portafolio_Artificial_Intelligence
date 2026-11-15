@@ -1,0 +1,31 @@
+id,company,title,label,prediction,confidence,low_confidence
+1,Siemens,"ICS Patch Tuesday: Siemens Flags High-Severity Flaws, Node2Shell Exposure",negative,neutral,0.496,True
+2,Airbus,Airbus Mobile hires military veterans through SkillBridge program,neutral,neutral,0.758,False
+3,Siemens,Siemens Energy more than doubles annual profit to €4.1 billion,positive,negative,0.449,True
+4,Airbus,Cathay boosts AIrbus A330neo order to 41 as HK Express adds A321neos,positive,positive,0.543,False
+5,Tesla,"If You Want to Order a New Tesla Cybertruck, You’re Now Forced to Buy the $112K Cyberbeast",negative,neutral,0.542,False
+6,Tesla,Tesla expands robotaxi service to San Antonio,positive,positive,0.729,False
+7,Siemens,Morgan Lewis advises Lauterbach Group on the sale to Siemens,positive,neutral,0.445,True
+8,Siemens,Siemens CEO says cooperation with Nvidia will not be affected by leadership uncertainty,neutral,positive,0.503,False
+9,Airbus,Lufthansa Extends Airbus A340-300 Operations as Boeing 777-9 Delays Push Deliveries to 2027,neutral,neutral,0.649,False
+10,Tesla,Form Energy Adds Meta and Tesla Veterans Lori Goler and Jon McNeill to Board as It Ramps Production for Commercial Growth,neutral,neutral,0.495,True
+11,Tesla,Finland clears Tesla assisted driving tech after changes,positive,neutral,0.784,False
+12,Airbus,Emirates strikes deal to take ownership of six Airbus A380 aircraft,neutral,neutral,0.813,False
+13,Tesla,"Woman injured in Highway 84 crash sues Tesla, car event organizers over alleged negligence",negative,neutral,0.511,False
+14,Airbus,Australia-France Airbus flight breaks world distance record,positive,neutral,0.657,False
+15,Airbus,Airbus A350-1000ULR Shatters Commercial Flight Distance Record in 24-Hour Qantas Test,positive,neutral,0.68,False
+16,Siemens,"European stocks near record high on Siemens, CoreWeave AI optimism",positive,neutral,0.489,True
+17,Tesla,"SpaceX-Tesla merger talks put 30,000 bitcoin back in focus",neutral,neutral,0.75,False
+18,Tesla,Tesla Pulls $42K Model Y AWD From US Website Amid Musk’s Pivot Toward Robotaxis,negative,neutral,0.454,True
+19,Siemens,Siemens Gamesa reaches breakeven after several challenging years,positive,neutral,0.522,False
+20,Tesla,Texas AG-elect vows 'tremendous scrutiny' of SpaceX-Tesla merger,negative,neutral,0.72,False
+21,Siemens,Siemens Energy sees higher margins as data centres boost power equipment demand,positive,neutral,0.571,False
+22,Siemens,Siemens lifts mid-term outlook as AI-driven data centre demand boosts orders,positive,positive,0.502,False
+23,Airbus,Etihad Airways Scraps All Airbus A380 Flights To North America: See Map Now,neutral,positive,0.6,False
+24,Siemens,Siemens Energy expands buyback programme with up to €9 billion more,positive,positive,0.839,False
+25,Siemens,Siemens Energy adds up to EUR9 billion to share buyback plan,positive,positive,0.5,False
+26,Tesla,"Rest in gaudy peace, Tesla Cybertruck | Column",negative,neutral,0.543,False
+27,Airbus,Data: Airbus & Boeing Commercial Orders For October 2026,neutral,neutral,0.704,False
+28,Airbus,Airbus And Boeing Report October 2026 Commercial Aircraft Orders and Deliveries,neutral,neutral,0.816,False
+29,Airbus,"‘Transformational project’ on the order of Airbus plant eyed for Mobile waterfront, mayor says",neutral,neutral,0.731,False
+30,Tesla,"A 68-Year-Old Retiree Bought 1,000 Tesla Shares at $108 in January 2023. Now Musk Could Merge Tesla Into SpaceX by December, and a 15% Premium Would Turn Her Stake Into About 3,270 SpaceX Shares",neutral,neutral,0.713,False

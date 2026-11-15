@@ -178,6 +178,41 @@ def evaluate(y_true, y_pred) -> dict:
     }
 
 
+def bootstrap_ci(y_true, y_pred, metric, n_boot: int = 1000, seed: int = config.RANDOM_SEED) -> tuple[float, float]:
+    """95 % percentile bootstrap confidence interval of a metric.
+
+    The rows (pairs of true and predicted label) are resampled with
+    replacement ``n_boot`` times; the metric is computed on every resample, and
+    the 2.5th and 97.5th percentiles of these values form the interval. The
+    model is not refitted: the interval reflects how much the score depends on
+    which sentences happen to be in the evaluation set.
+
+    Args:
+        y_true: True labels.
+        y_pred: Predicted labels, same length as ``y_true``.
+        metric: Function ``metric(y_true, y_pred) -> float``, e.g.
+            ``sklearn.metrics.accuracy_score``.
+        n_boot: Number of bootstrap resamples.
+        seed: Seed of the random generator; the same seed gives the same interval.
+
+    Returns:
+        ``(low, high)``.
+
+    Raises:
+        ValueError: If the inputs are empty or have different lengths.
+    """
+    y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+    n = len(y_true)
+    if n == 0 or len(y_pred) != n:
+        raise ValueError(f"Need equally long, non-empty inputs; got {n} and {len(y_pred)} rows.")
+    rng = np.random.default_rng(seed)
+    # One row of indices per resample, drawn with replacement
+    indices = rng.integers(0, n, size=(n_boot, n))
+    scores = np.array([metric(y_true[idx], y_pred[idx]) for idx in indices])
+    low, high = np.percentile(scores, [2.5, 97.5])
+    return float(low), float(high)
+
+
 def _cv_splitter() -> StratifiedKFold:
     """Return the cross-validation splitter shared by all CV functions.
 
