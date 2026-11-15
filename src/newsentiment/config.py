@@ -83,3 +83,13 @@ QUOTE_PAGE_PATTERNS = ("stock price and chart", "stock price, news, quote", "sto
 # low confidence: in the confidence-bin analysis in notebook 02 (out-of-fold, v2)
 # such predictions were only about 52 % correct.
 LOW_CONFIDENCE_THRESHOLD = 0.5
+
+# Real-news validation set (hand-labelled headlines, never used for tuning)
+# Sheet to label: sampled headlines with an empty "label" column, no predictions
+VALIDATION_SHEET = VALIDATION_DIR / "real_news_to_label.csv"
+# The same sheet after labelling, saved under this name by the labeller
+VALIDATION_LABELLED = VALIDATION_DIR / "real_news_labelled.csv"
+# SHA-256 of the labelled file, written once when the labels are frozen
+VALIDATION_HASH = VALIDATION_DIR / "real_news_labelled.sha256"
+# Headlines sampled per company
+VALIDATION_PER_COMPANY = 10

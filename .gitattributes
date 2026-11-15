@@ -1,0 +1,3 @@
+# Validation CSVs are stored byte for byte (no line-ending conversion), so the
+# SHA-256 of the frozen labels stays valid on every checkout and platform.
+data/validation/*.csv -text
