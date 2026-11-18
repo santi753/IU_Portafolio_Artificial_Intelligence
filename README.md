@@ -1,6 +1,6 @@
 # IU_Portafolio_Artificial_Intelligence
 
-**Status:** Phase 2 — development complete
+**Status:** Phase 2 submitted (18 Nov 2026); waiting for tutor feedback
 
 A Python command-line tool that fetches recent Google News headlines for a company and
 classifies each one as negative, neutral or positive. The classifier is a TF-IDF + logistic
